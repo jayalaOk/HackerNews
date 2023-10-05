@@ -1,3 +1,4 @@
+using HackerNews.Api.Middleware;
 using HackerNews.Application.AutoMapper;
 using HackerNews.Infrastructure.Abstractions;
 using HackerNews.Infrastructure.ExternalServices;
@@ -36,14 +37,13 @@ builder.Services.AddScoped<ICacheService,CacheService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMediatR(applicationAssembly);
 builder.Services.AddSwaggerGen();
-// Register HackerNewsAPIService and configure the HttpClient dependency
-builder.Services.AddHttpClient<IHackerNewsAPIService, HackerNewsAPIService>(client =>
-{
-    client.BaseAddress = new Uri("https://hacker-news.firebaseio.com/v0/"); // Configure the URL base
-});
+
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<IHackerNewsAPIService, HackerNewsAPIService>();
+builder.Services.AddTransient<IHttpClientFactoryWrapper, HttpClientFactoryWrapper>();
 
 var app = builder.Build();
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
